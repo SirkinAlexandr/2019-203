@@ -308,13 +308,83 @@ double Eps = 1e-20;
 
 void sirkinaa::lab8()
 {
+double **H = new double*[N], eps = 1.e-10;
+    for (int i = 0; i < N; i++) H[i] = new double[N];
 
+    do
+    {
+        double n = 0;
+        int i_max = 0, j_max = 1;
+        for (int i = 0; i < N; i++)
+            for (int j = i + 1; j < N; j++)
+            {
+                if (fabs(A[i][j]) > fabs(A[i_max][j_max]))
+                {
+                    i_max = i;
+                    j_max = j;
+                }
+
+                n += A[i][j] * A[i][j];
+            }
+
+        if (sqrt(n) < eps) break;
+
+        double fi = 0.5 * atan(2 * A[i_max][j_max] / (A[i_max][i_max] - A[j_max][j_max]));
+        for (int i = 0; i < N; i++)
+        {
+            H[i][i_max] = A[i][i_max] * cos(fi) + A[i][j_max] * sin(fi);
+            H[i][j_max] = A[i][j_max] * cos(fi) - A[i][i_max] * sin(fi);
+        }
+
+        for (int i = 0; i < N; i++)
+            for (int j = 0; j < N; j++)
+                if (j != i_max && j != j_max) H[i][j] = A[i][j];
+
+        for (int j = 0; j < N; j++)
+        {
+            A[i_max][j] = H[i_max][j] * cos(fi) + H[j_max][j] * sin(fi);
+            A[j_max][j] = H[j_max][j] * cos(fi) - H[i_max][j] * sin(fi);
+        }
+
+        for (int i = 0; i < N; i++)
+            for (int j = 0; j < N; j++)
+                if (i != i_max && i != j_max) A[i][j] = H[i][j];
+
+    }while(true);
+
+    for (int i = 0; i < N; i++) x[i] = A[i][i];
+
+    for (int i = 0; i < N; i++) delete[] H[i];
+    delete[] H;
 }
 
 
 void sirkinaa::lab9()
 {
-
+double eps=pow(10,-10), lambda=0, newlambda=0, y[N], mody;
+    x[0]=1;
+    do{
+        for (int i=0; i<N; i++){
+            y[i]=0;
+            for (int j=0; j<N; j++){
+                y[i]+=A[i][j]*x[j];
+            }
+        }
+        lambda=newlambda;
+        newlambda=0;
+        for (int i=0; i<N; i++){
+            newlambda+=y[i]*x[i];
+        }
+        mody=0;
+        for (int i=0; i<N; i++){
+            mody+=pow(y[i], 2);
+        }
+        mody=sqrt(mody);
+        for (int i=0; i<N; i++){
+            x[i]=y[i]/mody;
+        }
+    }while (abs(lambda-newlambda)>eps);
+    x[0]=newlambda;
 }
 
 
